@@ -5,6 +5,8 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
+# pyre-strict
+
 # pyre-ignore-all-errors[56]
 
 import enum
@@ -982,6 +984,10 @@ class SplitTableBatchedEmbeddingBagsCodegen(nn.Module):
             )
 
         (indices, offsets) = indices.long(), offsets.long()
+        # Force casting per_sample_weights to float
+        if per_sample_weights is not None:
+            per_sample_weights = per_sample_weights.float()
+
         if self.bounds_check_mode_int != BoundsCheckMode.NONE.value:
             torch.ops.fbgemm.bounds_check_indices(
                 self.rows_per_table,
@@ -2135,6 +2141,10 @@ class DenseTableBatchedEmbeddingBagsCodegen(nn.Module):
         feature_requires_grad: Optional[Tensor] = None,
     ) -> Tensor:
         (indices, offsets) = indices.long(), offsets.long()
+        # Force casting per_sample_weights to float
+        if per_sample_weights is not None:
+            per_sample_weights = per_sample_weights.float()
+
         return torch.ops.fbgemm.dense_embedding_codegen_lookup_function(
             dev_weights=self.weights,
             weights_offsets=self.weights_offsets,
